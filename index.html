@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-SEVEN AI ROBOT - Pure JS Client-Side App</title>
+    <!-- โหลด Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลด Font ANTONIO ตัวหนา -->
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400..900&display=swap" rel="stylesheet">
+    
+    <!-- กำหนดฟอนต์ ANTONIO และการตั้งค่าสีพื้นฐาน -->
+    <style>
+        /* Custom CSS สำหรับธีมกาแล็กซี่และเอฟเฟกต์โฮโลแกรม */
+        :root {
+            --color-blue: 0, 191, 255; 
+            --color-pink: 255, 105, 180;
+            --color-gold: 255, 215, 0; 
+            --color-green: 57, 255, 20; 
+            --color-orange: 255, 69, 0; 
+            --color-deepblue: 65, 105, 225;
+            --color-purple: 147, 51, 234; 
+        }
+        
+        /* Font Styles */
+        .font-Antonio {
+            font-family: 'Antonio', sans-serif;
+            letter-spacing: 0.08em; /* เพิ่มช่องไฟเพื่อความคมชัด */
+        }
+
+        body {
+            font-family: 'Antonio', sans-serif;
+            background-color: #03070d; /* Darker Base */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 50%, rgba(10, 20, 40, 0.4) 0%, transparent 40%), 
+                radial-gradient(circle at 90% 80%, rgba(20, 10, 50, 0.5) 0%, transparent 45%),
+                linear-gradient(135deg, #03070d 0%, #101826 100%); 
+            background-attachment: fixed;
+            color: #F0F9FF; /* Brighter text for better contrast */
+        }
+
+        /* Header */
+        .header-glow {
+            text-shadow: 0 0 8px rgba(var(--color-blue), 0.9),
+                         0 0 20px rgba(var(--color-deepblue), 0.7),
+                         0 0 30px rgba(var(--color-blue), 0.3);
+            letter-spacing: 0.1em;
+            color: #47b2ff; /* Light Cyan/Aqua for tech feel */
+        }
+
+        .slogan-text {
+            text-shadow: 0 0 5px #F0F9FF, 0 0 10px #b2ffff;
+            color: #47b2ff; /* deep Blue for contrast */
+            font-weight: 700;
+        }
+
+        .hologram-card {
+            backdrop-filter: blur(10px);
+            background-color: rgba(15, 25, 38, 0.5); 
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+            border-image: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)) 1;
+            border-radius: 0.75rem; 
+            padding: 1.75rem; 
+        }
+        
+        /* Hologram Colors */
+        .hologram-blue {--h-color: var(--color-blue); box-shadow: 0 0 15px rgba(var(--h-color), 0.5), 0 0 40px rgba(var(--h-color), 0.3); border-left: 3px solid rgb(var(--h-color));}
+        .hologram-pink {--h-color: var(--color-pink); box-shadow: 0 0 15px rgba(var(--h-color), 0.5), 0 0 40px rgba(var(--h-color), 0.3); border-left: 3px solid rgb(var(--h-color));}
+        .hologram-gold {--h-color: var(--color-gold); box-shadow: 0 0 15px rgba(var(--h-color), 0.5), 0 0 40px rgba(var(--h-color), 0.3); border-left: 3px solid rgb(var(--h-color));}
+        .hologram-green {--h-color: var(--color-green); box-shadow: 0 0 15px rgba(var(--h-color), 0.5), 0 0 40px rgba(var(--h-color), 0.3); border-left: 3px solid rgb(var(--h-color));}
+        .hologram-orange {--h-color: var(--color-orange); box-shadow: 0 0 15px rgba(var(--h-color), 0.5), 0 0 40px rgba(var(--h-color), 0.3); border-left: 3px solid rgb(var(--h-color));}
+        .hologram-deepblue {--h-color: var(--color-deepblue); box-shadow: 0 0 15px rgba(var(--h-color), 0.5), 0 0 40px rgba(var(--h-color), 0.3); border-left: 3px solid rgb(var(--h-color));}
+        .hologram-purple {--h-color: var(--color-purple); box-shadow: 0 0 15px rgba(var(--h-color), 0.5), 0 0 40px rgba(var(--h-color), 0.3); border-left: 3px solid rgb(var(--h-color));} 
+        
+        .hologram-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            z-index: 10;
+        }
+        
+        /* Selected State for Mode Cards */
+        .hologram-card.selected {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(var(--color-blue), 0.9);
+            border: 2px solid rgb(var(--color-blue));
+        }
+
+        /* Submit Button */
+        #submit-button {
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #00BFFF, #4169E1);
+            text-shadow: 0 0 5px #000000; 
+            box-shadow: 0 0 15px rgba(var(--color-blue), 0.7);
+            font-weight: 800;
+        }
+
+        #submit-button:disabled {
+            background: #25252d;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        
+        /* Task Button Styling */
+        .task-button {
+            background-color: rgba(30, 41, 59, 0.7); 
+            border: 1px solid rgba(100, 116, 139, 0.5); 
+            color: #cbd5e1; 
+            border-radius: 9999px; 
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .task-button:hover {
+            background-color: rgba(51, 65, 85, 0.9); 
+            color: #ffffff;
+        }
+
+        .task-button.selected {
+            background-color: rgb(var(--color-deepblue)); 
+            color: #ffffff;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(var(--color-deepblue), 0.7);
+            border-color: rgb(var(--color-blue));
+        }
+        
+        /* Generative Art Canvas Styling */
+        #generative-canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid rgba(var(--color-blue), 0.5);
+            box-shadow: 0 0 20px rgba(var(--color-blue), 0.5);
+            background-color: #0d1626;
+        }
+        
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <main class="container mx-auto max-w-7xl pt-4 pb-12">
+        <!-- ส่วนที่ 1: Header และ Slogan -->
+        <header class="text-center mb-12 space-y-4">
+            <h1 class="header-glow font-Antonio text-4xl sm:text-6xl font-extrabold tracking-tight uppercase leading-tight">
+                K-SEVEN AI ROBOT <span class="text-base font-light block sm:inline">CLIENT-SIDE PROTOCOL</span>
+            </h1>
+            <h2 class="text-xl sm:text-2xl font-bold slogan-text font-Antonio text-cyan-300/90 italic max-w-3xl mx-auto border-b border-cyan-500/30 pb-2">
+                "ทุกฟังก์ชันทำงานได้ทันทีบนเบราว์เซอร์ของคุณ! ไม่ต้องใช้ API Key"
+            </h2>
+        </header>
+
+        <!-- ส่วนที่ 2: กล่องฟังก์ชัน 7 ช่อง -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="mode-cards-container">
+            <!-- AI Co-Pilot -->
+            <div id="co-pilot-card" data-mode="AI Co-Pilot" data-color="blue" class="hologram-card hologram-blue rounded-xl cursor-pointer hover:border-cyan-400">
+                <h3 class="text-2xl font-bold mb-2 text-cyan-300 font-Antonio">AI Co-Pilot ✨</h3>
+                <p class="text-sm text-gray-300 opacity-80">เครื่องมือคู่คิดด้านกลยุทธ์และการสร้างสรรค์เนื้อหา (ใช้ Logic Templates)</p>
+            </div>
+            <!-- Humanizer -->
+            <div id="humanizer-card" data-mode="Humanizer" data-color="pink" class="hologram-card hologram-pink rounded-xl cursor-pointer hover:border-pink-400">
+                <h3 class="text-2xl font-bold mb-2 text-pink-300 font-Antonio">Humanizer 🌙</h3>
+                <p class="text-sm text-gray-300 opacity-80">ปรับปรุงเนื้อหาด้วย JavaScript String Manipulation ให้เป็นธรรมชาติ</p>
+            </div>
+            <!-- Digital Product -->
+            <div id="digital-product-card" data-mode="Digital Product" data-color="gold" class="hologram-card hologram-gold rounded-xl cursor-pointer hover:border-yellow-400">
+                <h3 class="text-2xl font-bold mb-2 text-yellow-300 font-Antonio">Digital Product ⭐️</h3>
+                <p class="text-sm text-gray-300 opacity-80">เครื่องมือสร้างและวางแผนผลิตภัณฑ์ดิจิทัล (ใช้ Structured Data Generation)</p>
+            </div>
+            <!-- Mobile Ads and Workflow -->
+            <div id="mobile-ads-card" data-mode="Mobile Ads and Workflow" data-color="green" class="hologram-card hologram-green rounded-xl cursor-pointer hover:border-lime-400">
+                <h3 class="text-2xl font-bold mb-2 text-lime-3d00 font-Antonio">Mobile Ads and Workflow 🪐</h3>
+                <p class="text-sm text-gray-300 opacity-80">สร้างสคริปต์โฆษณาและ Workflow (ใช้ Weighted Text Randomization)</p>
+            </div>
+            <!-- Asset & Media Creator -->
+            <div id="asset-media-card" data-mode="Asset & Media Creator" data-color="orange" class="hologram-card hologram-orange rounded-xl cursor-pointer hover:border-orange-400">
+                <h3 class="text-2xl font-bold mb-2 text-orange-300 font-Antonio">Asset & Media Creator 🔥</h3>
+                <p class="text-sm text-gray-300 opacity-80">ฟังก์ชันเสียงใช้ Browser TTS และรูปภาพใช้ Generative Canvas Art</p>
+            </div>
+            <!-- Meta-Prompt and Prompt Engineering -->
+            <div id="meta-prompt-card" data-mode="Meta-Prompt and Prompt Engineering" data-color="deepblue" class="hologram-card hologram-deepblue rounded-xl cursor-pointer hover:border-blue-400">
+                <h3 class="text-2xl font-bold mb-2 text-blue-300 font-Antonio">Meta-Prompt and Prompt Engineering ♠️</h3>
+                <p class="text-sm text-gray-300 opacity-80">เครื่องมือช่วยออกแบบพรอมท์ระดับสูง (ใช้ Structure Template Filling)</p>
+            </div>
+            <!-- K-SEVEN AI Chatbot (General) -->
+            <div id="chatbot-card" data-mode="K-SEVEN AI Chatbot" data-color="purple" class="hologram-card hologram-purple rounded-xl cursor-pointer hover:border-purple-400">
+                <h3 class="text-2xl font-bold mb-2 text-purple-300 font-Antonio">K-SEVEN AI Chatbot 💬</h3>
+                <p class="text-sm text-gray-300 opacity-80">ระบบโต้ตอบอัจฉริยะ (ใช้ Pattern Matching และ Canned Responses)</p>
+            </div>
+        </section>
+
+        <!-- ส่วนที่ 3: ช่องป้อนคำสั่งและปุ่ม Submit -->
+        <section class="mt-12">
+            <div class="flex flex-col space-y-4">
+                <label for="command-input" class="text-lg font-semibold text-gray-100">
+                    <span id="task-label">ป้อนคำสั่งหรือข้อความที่คุณต้องการ</span>:
+                </label>
+                
+                <textarea 
+                    id="command-input" 
+                    rows="4" 
+                    class="w-full p-4 text-base rounded-lg border-2 bg-gray-900/80 text-gray-50 border-cyan-500/50 
+                           focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 
+                           hologram-card hologram-deepblue" 
+                    placeholder="ป้อนคำสั่งหรือข้อความของคุณที่นี่..."
+                ></textarea>
+
+                <!-- Task Selector Area -->
+                <div id="task-selector-area" class="min-h-[50px] p-4 bg-gray-900/40 rounded-lg border border-gray-700">
+                    <p class="text-sm text-gray-400">กรุณาเลือกโหมดการทำงานด้านบนก่อน</p>
+                </div>
+
+                <button 
+                    id="submit-button"
+                    class="w-full md:w-auto self-end px-10 py-3 rounded-full text-lg font-bold uppercase text-white hover:shadow-xl"
+                    disabled
+                >
+                    Process Command (ประมวลผลคำสั่ง)
+                </button>
+            </div>
+        </section>
+
+        <!-- ส่วนที่ 4: แสดงผลลัพธ์ -->
+        <div id="output-area" class="mt-8 p-6 bg-gray-900/70 rounded-lg hologram-deepblue min-h-32 hidden">
+            <h3 class="text-xl font-bold text-cyan-300 mb-4 font-Antonio">ผลลัพธ์ของ K-SEVEN AI ROBOT:</h3>
+            <div id="loading-spinner" class="text-center py-8 hidden">
+                <svg class="animate-spin h-10 w-10 text-cyan-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-cyan-400 mt-2">กำลังประมวลผล (Client-Side)... โปรดรอสักครู่</p>
+            </div>
+            
+            <!-- Generative Canvas Art Container (แทนที่ Image Output) -->
+            <div id="image-output-container" class="mt-4 text-center hidden">
+                <canvas id="generative-canvas" width="600" height="400" class="mx-auto rounded-lg shadow-2xl"></canvas>
+                <p class="text-sm text-gray-400 mt-2">ผลงาน Generative Art ที่สร้างจากคำสั่งของคุณ (Pure JS Canvas)</p>
+            </div>
+            
+            <pre id="output-content" class="whitespace-pre-wrap font-mono text-gray-200 text-sm leading-relaxed"></pre>
+            
+            <!-- TTS Player (สำหรับ TTS/Audio Drama) -->
+            <div id="tts-controls" class="mt-4 hidden p-3 bg-gray-800 rounded-lg">
+                <p class="text-cyan-400 font-semibold mb-2">🎙️ TTS Playback Controls:</p>
+                <button id="play-tts" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                    Play/Stop Narration
+                </button>
+                <p id="tts-status" class="text-sm text-gray-400 mt-2">สถานะ: พร้อม</p>
+            </div>
+            
+            <!-- Sources Area (ถูกลบออกแล้วเพราะไม่มี Google Search Grounding) -->
+        </div>
+
+        <!-- ส่วนที่ 5: Lead Generation (ถูกเปลี่ยนเป็น Mailto CTA) -->
+        <section class="mt-16 pt-8 border-t border-gray-800/50">
+            <div class="hologram-card p-6 rounded-xl hologram-gold/20 flex flex-col items-center text-center space-y-8">
+                
+                <!-- CTA หลัก: High-Ticket Upsell -->
+                <div class="w-full">
+                    <p class="text-xl font-Antonio font-extrabold text-white mb-4">
+                        คุณชอบฟังก์ชันเหล่านี้หรือไม่? สร้าง Custom App Tool แบบนี้ภายใต้ชื่อของคุณเอง!
+                    </p>
+                    
+                    <a 
+                        href="mailto:Sevengalaxyproject@gmail.com?subject=สอบถามบริการสร้าง Custom Client-Side App จาก K-SE7EN DEMO"
+                        class="w-full md:w-3/4 inline-block px-8 py-5 rounded-lg text-xl font-extrabold uppercase shadow-2xl tracking-wider hover:text-white transition-all duration-300 
+                               bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900"
+                    >
+                        [คลิกเพื่อปรึกษา K-SEVEN ROBOT]
+                    </a>
+                    <p class="text-base text-gray-300 mt-3 font-semibold font-Antonio">
+                        Email: Sevengalaxyproject@gmail.com
+                    </p>
+                </div>
+                
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript Core Logic and Client-Side Functions -->
+    <script>
+        // --- Core Application Configuration and Templates ---
+        let selectedMode = null;
+        let selectedTask = null;
+        let currentUtterance = null; // For Speech Synthesis Control
+
+        const elements = {};
+        
+        // --- TEXT TEMPLATES (Mimicking Gemini's structured output) ---
+        const templates = {
+            'Executive Summary & Contextualize with Search': (input) => 
+                `**EXECUTIVE SUMMARY (Client-Side Simulation)**\n\nหัวข้อหลัก: ${input}\n\nจากการวิเคราะห์โครงสร้างข้อมูลเบื้องต้นบนเบราว์เซอร์, โครงการนี้มีศักยภาพในการสร้างผลตอบแทนสูงหากมุ่งเน้นไปที่กลยุทธ์การเติบโตแบบทวีคูณ (Viral Growth). การลงทุนในส่วนต่อประสานผู้ใช้ (UX) และการปรับปรุงประสิทธิภาพความเร็วเป็นสิ่งสำคัญในไตรมาสหน้า เพื่อคงความสามารถในการแข่งขันในตลาดที่ขับเคลื่อนด้วยเทคโนโลยีอย่างต่อเนื่อง\n\n**KEY FINDINGS:**\n1. Market Saturation: High, requires a niche focus.\n2. Technical Debt: Low, focus on feature expansion.\n3. Next Step: Prototype development of a key differentiation feature.`,
+                
+            'Superior Blog Post Outline': (input) => 
+                `# H1: The Ultimate Guide to ${input}\n\n## H2: ทำไม ${input} ถึงสำคัญต่อธุรกิจของคุณ?\n### H3: เข้าใจแก่นแท้ของปัญหา\n### H3: การเปลี่ยนแปลงครั้งใหญ่ในตลาด\n\n## H2: 5 ขั้นตอนสู่ความสำเร็จด้วย ${input}\n### H3: ขั้นตอนที่ 1: การวางแผนเชิงกลยุทธ์\n### H3: ขั้นตอนที่ 2: การดำเนินการและการวัดผล\n### H3: ขั้นตอนที่ 3: การปรับปรุงซ้ำ (Iterate)\n\n## H2: สรุปและ Call to Action (CTA)\n### H3: แนวโน้มในอนาคต\n### H3: เริ่มต้นอย่างไรวันนี้?`,
+                
+            'The "Why Now" Hook Generator': (input) => {
+                const hooks = [
+                    `[Hook 1 - Urgency] หยุดใช้ ${input} แบบเดิม ๆ ได้แล้ว! ตลาดเปลี่ยนไปเมื่อ 72 ชั่วโมงที่แล้ว นี่คือเหตุผล...`,
+                    `[Hook 2 - FOMO] ถ้าคู่แข่งของคุณเริ่มใช้ ${input} นี้แล้ว และคุณยังไม่รู้... คุณจะตามหลังไปอีก 6 เดือน!`,
+                    `[Hook 3 - Trend] ${input} กำลังเป็นเทรนด์ใหญ่ที่สุดแห่งปี: คุณพร้อมที่จะกอบโกยผลประโยชน์แล้วหรือยัง?`,
+                    `[Hook 4 - Pain Point] เบื่อกับปัญหา ${input} ใช่ไหม? นี่คือโซลูชัน 5 นาทีที่คุณต้องการ`,
+                    `[Hook 5 - Shock] ${input} ไม่ได้ทำอย่างที่คุณคิด! นี่คือความจริงที่คุณไม่เคยได้ยิน`
+                ];
+                return hooks.join('\n\n---\n\n');
+            },
+            
+            'Free Article Writer (ร่างบทความ 300 คำ)': (input) => 
+                `**Draft Article (300 Words Simulation): ${input}**\n\nในโลกปัจจุบันที่ขับเคลื่อนด้วยข้อมูล, ความเข้าใจในแก่นของ "${input}" จึงเป็นสิ่งสำคัญที่ไม่สามารถละเลยได้ บทความนี้จะสำรวจว่าเทคโนโลยีนี้ได้เปลี่ยนแปลงแนวคิดพื้นฐานอย่างไร และทำไมทุกองค์กรจึงควรให้ความสำคัญกับการปรับตัว\n\nหัวใจสำคัญของ ${input} อยู่ที่การผสานรวมระหว่างประสิทธิภาพและความคล่องตัว (Agility) ซึ่งช่วยให้สามารถตอบสนองต่อความต้องการของตลาดได้อย่างรวดเร็ว ในขณะที่ลดความเสี่ยงจากการตัดสินใจที่ผิดพลาด การนำ ${input} ไปใช้อย่างมีกลยุทธ์จึงไม่เป็นเพียงแค่การปรับปรุง แต่คือการกำหนดอนาคตของธุรกิจ\n\n(***หมายเหตุ: เนื้อหานี้ถูกสร้างขึ้นด้วยเทมเพลต Pure JS เพื่อจำลองการร่างบทความ 300 คำโดย AI***)`,
+                
+            'AI-to-Human Rewrite (Human Check)': (input) => {
+                // Simple Humanization: Replace formal words with common ones, inject enthusiasm
+                let output = input.replace(/utilize|ดำเนินการ/gi, 'ใช้')
+                                  .replace(/strategic|กลยุทธ์/gi, 'แผน')
+                                  .replace(/optimization|การปรับปรุง/gi, 'ทำให้ดีขึ้น')
+                                  .replace(/therefore|ดังนั้น/gi, 'ก็เลย');
+                // Add a conversational opening/closing
+                return `[ฉบับ Humanized]\n\nเอาจริงๆ นะ, ข้อความนี้มันฟังดูเป็นหุ่นยนต์ไปหน่อยใช่ไหม? ลองเปลี่ยนใหม่เป็น:\n\n${output}\n\nอืม... ฟังดูเหมือนเพื่อนคุยกันมากขึ้นเยอะเลย!`;
+            },
+            
+            'Tone Adjuster (ปรับโทนเสียงเฉพาะบุคคล)': (input) => {
+                // This requires parsing the tone from the input. (e.g., "Text: [input] Tone: [tone]")
+                const parts = input.split('Tone:');
+                const text = parts[0].replace('Text:', '').trim();
+                const tone = parts.length > 1 ? parts[1].trim() : 'professional';
+                
+                let adjustedText = text;
+                if (tone.toLowerCase().includes('cheerful')) {
+                    adjustedText = text.toUpperCase().split('.').join('!').split('?').join('??!!') + ' เยี่ยมไปเลย!';
+                } else if (tone.toLowerCase().includes('corporate')) {
+                    adjustedText = 'เรียนท่านผู้บริหาร, ตามแผนการที่วางไว้, ' + text.toLowerCase().replace(/very|มาก/g, 'อย่างยิ่ง');
+                } else {
+                    adjustedText = `[ปรับโทนเป็น ${tone}]: ` + text;
+                }
+                return adjustedText;
+            },
+            
+            'โครงร่าง E-book (7 บท)': (input) => 
+                `**E-BOOK OUTLINE (7 Chapters on: ${input})**\n\nบทนำ: ทำไม E-book นี้จึงสำคัญกับชีวิตคุณ?\n\nบทที่ 1: การกำหนดเป้าหมายหลักของ ${input}\n    - 1.1 การประเมินสถานการณ์ปัจจุบัน\n    - 1.2 การระบุช่องว่างของความรู้\n\nบทที่ 2: เครื่องมือและเทคโนโลยีที่จำเป็น\n    - 2.1 แนะนำเครื่องมือ A, B, C\n\nบทที่ 3: กลยุทธ์ขั้นสูงในการใช้ ${input}\n    - 3.1 เทคนิคการหลีกเลี่ยงข้อผิดพลาด\n\nบทที่ 4: กรณีศึกษาที่ประสบความสำเร็จ\n\nบทที่ 5: การแก้ปัญหาที่พบบ่อย\n\nบทที่ 6: แนวโน้มในอนาคตและนวัตกรรม\n\nบทที่ 7: สรุป: แผนปฏิบัติการ 30 วัน`,
+                
+            'Course Module Creator (สร้างหลักสูตร 4 โมดูล)': (input) => 
+                `**ONLINE COURSE STRUCTURE (4 Modules on: ${input})**\n\nModule 1: Foundation and Mindset\n    - Lesson 1.1: Why ${input} Matters\n    - Lesson 1.2: Essential Vocabulary\n\nModule 2: Practical Application\n    - Lesson 2.1: Step-by-Step Guide\n    - Lesson 2.2: Hands-on Exercise\n\nModule 3: Advanced Techniques\n    - Lesson 3.1: Optimizing for Speed\n    - Lesson 3.2: Troubleshooting\n\nModule 4: Scaling and Future Proofing\n    - Lesson 4.1: Building a long-term plan\n    - Lesson 4.2: Final Project & Certification`,
+                
+            'Irresistible Product Description': (input) => 
+                `**IRRESISTIBLE COPY (for: ${input})**\n\nเบื่อกับการใช้ [Pain Point] ใช่ไหม? พบกับ ${input} ที่จะเปลี่ยนวิธีที่คุณ [Goal] ไปตลอดกาล! ผลิตภัณฑ์นี้ไม่เพียงแค่แก้ปัญหา แต่ยังปลดล็อกศักยภาพใหม่ๆ ให้กับคุณด้วย\n\n🔥 **Why You Need It Now:**\n- ลดเวลาทำงานลง 50% ด้วยเทคโนโลยีใหม่\n- ผลลัพธ์ที่แม่นยำกว่าคู่แข่ง 3 เท่า\n- รับประกันความพึงพอใจ 100% (จำกัดจำนวน)\n\n**CALL TO ACTION:** คลิก "ซื้อทันที" ก่อนสินค้าหมด!`,
+                
+            'Template/Worksheet Idea Generator': (input) => {
+                const ideas = [
+                    `1. **Worksheet:** 30-Day ${input} Habit Tracker (Purpose: สร้างวินัยและติดตามความคืบหน้า)`,
+                    `2. **Template:** ${input} Strategic Planning Canvas (Purpose: วางแผนองค์ประกอบทั้งหมดในหน้าเดียว)`,
+                    `3. **Worksheet:** The ${input} Quick Audit Checklist (Purpose: ประเมินจุดแข็งจุดอ่อนอย่างรวดเร็ว)`,
+                    `4. **Template:** Weekly ${input} Content Calendar (Purpose: จัดตารางการสร้างเนื้อหา)`,
+                    `5. **Worksheet:** Crisis Management Flow for ${input} Failure (Purpose: เตรียมพร้อมสำหรับสถานการณ์ฉุกเฉิน)`
+                ];
+                return ideas.join('\n\n');
+            },
+            
+            'JSON Schema Data Generator ✨': (input) => {
+                const safeInput = input.substring(0, 50);
+                return JSON.stringify([
+                    { "key": `${safeInput} - Feature A`, "value": "High performance and efficiency." },
+                    { "key": `${safeInput} - Requirement B`, "value": "Full compliance with modern standards." },
+                    { "key": `${safeInput} - Status C`, "value": "Ready for phase two testing." }
+                ], null, 2);
+            },
+            
+            'User Story & Acceptance Criteria Builder (JSON) ⚙️': (input) => {
+                const safeInput = input.substring(0, 40);
+                return JSON.stringify([
+                    {
+                        "userStory": `As a customer, I want to filter products by '${safeInput}' so that I can quickly find what I need.`,
+                        "acceptanceCriteria": [
+                            "Given the filter is applied, When a user searches, Then only matching products are displayed.",
+                            "The filter should be visible on the mobile view.",
+                            "The system must handle 500+ items without performance lag."
+                        ],
+                        "priority": "High"
+                    },
+                    {
+                        "userStory": `As an admin, I want to edit the '${safeInput}' text so that I can update information easily.`,
+                        "acceptanceCriteria": [
+                            "User must have 'Editor' role to access.",
+                            "Changes must be logged for audit trail."
+                        ],
+                        "priority": "Medium"
+                    }
+                ], null, 2);
+            },
+            
+            'High-Convert Ad Copy (A/B Test)': (input) => {
+                return `**VERSION A (Focus: Pain Point)**\n\nHeadline: หยุดทนกับปัญหา ${input} ได้แล้ว!\nBody: คุณเสียเวลาไปกับเรื่องนี้มากพอแล้ว โซลูชันใหม่ของเราช่วยคุณประหยัดเงินและเวลาได้ถึง 90% โดยเริ่มได้ทันที!\nCTA: คลิกเพื่อดูวิธีแก้ปัญหา\n\n---\n\n**VERSION B (Focus: Benefit)**\n\nHeadline: ปลดล็อกพลังของ ${input} ใน 5 นาที!\nBody: ลองนึกภาพชีวิตที่ปราศจากความยุ่งยากนี้! ${input} จะนำคุณไปสู่เป้าหมายที่แท้จริง พร้อมการรับประกันผลลัพธ์ที่น่าทึ่ง\nCTA: รับ ${input} ฟรีวันนี้!`;
+            },
+            
+            '5-Day Email Sequence Draft': (input) => {
+                return `**5-DAY EMAIL SEQUENCE (for: ${input})**\n\nDay 1: Subject: ยินดีต้อนรับสู่โลกของ ${input} (Body: แนะนำคุณค่า, สิ่งที่คุณจะได้รับ)\n\nDay 2: Subject: เคล็ดลับที่ 1 ที่ทุกคนมองข้าม (Body: ให้คุณค่า, แก้ไขปัญหาเล็ก ๆ)\n\nDay 3: Subject: อย่าเชื่อเรา, ลองดูรีวิวนี้ (Body: สร้างความน่าเชื่อถือด้วย Testimonials)\n\nDay 4: Subject: การลงทุนใน ${input} คุ้มค่าแค่ไหน? (Body: เน้น Benefit/ROI)\n\nDay 5: Subject: โอกาสสุดท้าย! (Body: Final CTA พร้อม Urgency)`;
+            },
+            
+            'Social Media Hook & Caption (Mobile-First)': (input) => {
+                return `**HOOK 1 (Video Focus):** ✨ สิ่งนี้จะเปลี่ยนมุมมอง ${input} ของคุณไปตลอดกาล\nCaption: นี่คือความลับที่คนสำเร็จเขาใช้กัน! กดเซฟไว้ดูตอนทำ ${input} นะ 🚀 #${input.replace(/\s/g, '')} #Tips\n\n**HOOK 2 (Image/Static):** 🤯 นี่ไม่ใช่เรื่องตลก! ${input} ทำได้ขนาดนี้แล้ว\nCaption: คุณเชื่อหรือไม่ว่าเราทำสิ่งนี้ได้ใน 5 นาที? DM มาเพื่อรับลิงก์เต็ม! 📩`;
+            },
+            
+            'SEO Keyword Cluster (Local/Global)': (input) => {
+                const primary = `${input} services`;
+                const longtails = [
+                    `${input} near me`,
+                    `best ${input} tutorial`,
+                    `cheap ${input} expert`,
+                    `how to master ${input} fast`,
+                    `alternatives to ${input} 2024`,
+                    `${input} for beginners`,
+                    `local ${input} specialists`,
+                    `pros and cons of ${input}`,
+                    `what is ${input} methodology`,
+                    `latest trends in ${input}`
+                ];
+                return `**SEO Keyword Cluster Simulation**\n\nPrimary Keyword: ${primary}\n\n**Long-Tail Cluster (Global/Local Focus):**\n- ${longtails.join('\n- ')}\n\n(***หมายเหตุ: ข้อมูลสร้างจาก Template ภายใน ไม่ใช่การค้นหาแบบเรียลไทม์***)`;
+            },
+            
+            'Video Script Outline (90-วินาที)': (input) => {
+                return `**90-Second Video Script: ${input}**\n\nScene 1 (0:00-0:10): HOOK - ปัญหาที่น่ารำคาญที่สุดเกี่ยวกับ ${input}\n\nScene 2 (0:10-0:25): PROBLEM - แสดงให้เห็นว่าปัญหาทำลายชีวิต/ธุรกิจคุณอย่างไร\n\nScene 3 (0:25-0:50): SOLUTION - แนะนำ ${input} ในฐานะฮีโร่\n\nScene 4 (0:50-1:10): BENEFIT - สรุปคุณค่า 3 อย่างที่ ${input} มอบให้\n\nScene 5 (1:10-1:20): SOCIAL PROOF - คำพูดสั้นๆ จากลูกค้า (Simulated)\n\nScene 6 (1:20-1:30): FINAL CTA - Call to Action ที่ชัดเจนและเร่งด่วน`;
+            },
+            
+            'Podcast Episode Framework': (input) => {
+                return `**30-Minute Podcast Framework: ${input}**\n\n**Intro (3 min):**\n- Script: 'สวัสดีครับ/ค่ะ ยินดีต้อนรับสู่ [Podcast Name] วันนี้เราจะดำดิ่งสู่หัวข้อที่ทุกคนพูดถึง: ${input}!'\n\n**Segment 1 (7 min):**\n- Topic: ที่มาและความเป็นมาของ ${input}\n- Talking Points: ข้อเท็จจริงทางประวัติศาสตร์, จุดเปลี่ยนสำคัญ\n\n**Segment 2 (10 min):**\n- Topic: วิธีการใช้ ${input} อย่างมืออาชีพ\n- Talking Points: 3 ขั้นตอนที่ทำได้ทันที, ข้อควรระวัง\n\n**Segment 3 (7 min):**\n- Topic: อนาคตของ ${input} และสิ่งที่กำลังจะมา\n- Talking Points: แนวโน้มใหม่, การคาดการณ์\n\n**Outro (3 min):**\n- Script: 'ขอบคุณที่ติดตาม. อย่าลืมกด Subscribe และไปที่เว็บไซต์ของเราเพื่อรับ Checklist ฟรีเกี่ยวกับ ${input}!'`;
+            },
+            
+            'Image Prompt Generator': (input) => {
+                return `A cinematic high-resolution 8K photo of a cosmic robot meditating on a purple moon, hyper-detailed, volumetric lighting, unreal engine 5, digital painting, style inspired by Moebius. (Refined from: ${input})`;
+            },
+            
+            'Meta-Prompt Protocol Draft': (input) => {
+                return `**META-PROMPT PROTOCOL DRAFT (Target: ${input})**\n\n**1. ROLE:** Act as a world-class strategic consultant with 20 years of experience in the specific domain of the user's input.\n\n**2. TASK:** Generate a 5-point actionable strategic plan to achieve the user's goal (${input}).\n\n**3. CONTEXT:** Assume the operating environment is highly competitive, high-budget, and demands aggressive growth.\n\n**4. CONSTRAINTS:** Response must be brief, clear, and focused on implementation. Do not use jargon unnecessarily.\n\n**5. OUTPUT FORMAT:** A numbered list with a bold title for each point.`;
+            },
+            
+            'Advanced System Prompt Builder': (input) => {
+                return `**SYSTEM INSTRUCTION (for: ${input})**\n\nRole: You are 'The Accelerator', an AI specialized in maximizing growth and efficiency within the context of ${input}.\n\nPrimary Goal: To provide a step-by-step implementation guide that minimizes user effort.\n\nConstraints:\n1. The output must not exceed 500 words.\n2. Always start the response with an encouraging emoji.\n3. Do not engage in philosophical debate; focus only on actionable steps.\n\nSuccess Metrics: The plan must be executable by a single person in under 5 hours.`;
+            },
+            
+            'Prompt Optimizer': (input) => {
+                return `**PROMPT OPTIMIZER RESULT**\n\nOriginal: ${input}\n\nOptimized Prompt: "Act as an expert [Role]. Given the input: '${input}', please provide a comprehensive, step-by-step analysis that includes a SWOT assessment and a recommended 3-month action plan. The output must be formatted using Markdown bullet points for clarity."`;
+            },
+            
+            'K-SEVEN AI Chatbot': (input) => {
+                // Simple pattern matching for a conversational feel
+                const lowerInput = input.toLowerCase();
+                if (lowerInput.includes('สวัสดี') || lowerInput.includes('hello')) {
+                    return 'สวัสดีครับ! K-SEVEN AI ROBOT ยินดีให้บริการ คุณมีคำถามอะไรเกี่ยวกับเทคโนโลยี, ธุรกิจ, หรือการสร้างสรรค์เนื้อหาที่อยากจะปรึกษาไหมครับ?';
+                } else if (lowerInput.includes('ทำอะไรได้บ้าง')) {
+                    return 'ผมสามารถจำลองการสร้างโครงร่างบทความ, ร่างสคริปต์โฆษณา, ปรับปรุงโทนเสียง, หรือแม้กระทั่งสร้างงานศิลปะนามธรรมบน Canvas ได้ทันทีด้วย Pure JavaScript ครับ ลองเลือกโหมดด้านบนได้เลย!';
+                } else if (lowerInput.includes('ขอบคุณ')) {
+                    return 'ด้วยความยินดีครับ! หากต้องการความช่วยเหลือด้านอื่นอีกเมื่อไหร่ อย่าลังเลที่จะกลับมาหาผมนะครับ';
+                }
+                return `ขอบคุณสำหรับคำถาม "${input}" ครับ! เนื่องจากเรากำลังทำงานในโหมด Pure Client-Side AI Chatbot, ผมสามารถจำลองการตอบคำถามทั่วไปให้คุณได้ครับ. สรุปคือ: นี่คือแนวคิดที่ดีและมีศักยภาพในการพัฒนาต่อไป!`;
+            }
+        };
+
+        // --- TTS and Audio Drama Configuration ---
+        const ttsConfig = {
+            'Text-to-Speech (TTS) Draft': { voice: 'Zaravona', lang: 'th-TH', textPrefix: 'ข้อความเสียงที่ถูกสร้าง: ' },
+            'Audio Drama Generator (Multi-Speaker) ✨': {
+                voiceA: { name: 'Zaravona', lang: 'th-TH' }, // Voice 1
+                voiceB: { name: 'Karen', lang: 'en-US' },   // Voice 2 (Use different languages/names for distinction)
+                scriptTemplate: (concept) => 
+                    `Speaker A: สวัสดีครับคุณ B วันนี้เราจะมาคุยกันเรื่อง ${concept} ใช่ไหม?
+                    Speaker B: ถูกต้องเลยค่ะ! หัวข้อนี้กำลังมาแรงมากในโลกดิจิทัล
+                    Speaker A: ผมคิดว่ามันจะเปลี่ยนวิธีการทำงานของเราไปตลอดกาล
+                    Speaker B: เห็นด้วยอย่างยิ่งค่ะ!`,
+            }
+        };
+
+        // --- Generative Art (Image Replacement) Configuration ---
+        const colorPalettes = [
+            ['#00BFFF', '#4169E1', '#00FFFF', '#87CEFA'], // Blue/Cyan
+            ['#FF69B4', '#FF1493', '#FFDAB9', '#FFC0CB'], // Pink/Rose
+            ['#FFD700', '#FFA500', '#FF8C00', '#FF4500'], // Gold/Orange
+            ['#39FF14', '#00FF00', '#7FFF00', '#ADFF2F'], // Neon Green
+            ['#9370DB', '#8A2BE2', '#4B0082', '#9400D3']  // Purple
+        ];
+
+        // --- Task Mapping ---
+        const taskLists = {
+            'AI Co-Pilot': ['Executive Summary & Contextualize with Search', 'Superior Blog Post Outline', 'The "Why Now" Hook Generator', 'Free Article Writer (ร่างบทความ 300 คำ)'], 
+            'Humanizer': ['AI-to-Human Rewrite (Human Check)', 'Tone Adjuster (ปรับโทนเสียงเฉพาะบุคคล)'], 
+            'Digital Product': ['โครงร่าง E-book (7 บท)', 'Course Module Creator (สร้างหลักสูตร 4 โมดูล)', 'Irresistible Product Description', 'Template/Worksheet Idea Generator', 'JSON Schema Data Generator ✨', 'User Story & Acceptance Criteria Builder (JSON) ⚙️'], 
+            'Mobile Ads and Workflow': ['High-Convert Ad Copy (A/B Test)', '5-Day Email Sequence Draft', 'Social Media Hook & Caption (Mobile-First)', 'SEO Keyword Cluster (Local/Global)'], 
+            'Asset & Media Creator': ['Video Script Outline (90-วินาที)', 'Podcast Episode Framework', 'Text-to-Speech (TTS) Draft', 'Audio Drama Generator (Multi-Speaker) ✨', 'Image Prompt Generator', 'AI Image Generator (Dalle-3/Imagen) ✨'], 
+            'Meta-Prompt and Prompt Engineering': ['Meta-Prompt Protocol Draft', 'Advanced System Prompt Builder', 'Prompt Optimizer'], 
+            'K-SEVEN AI Chatbot': ['General Conversation & Q/A'], 
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cache DOM elements
+            elements.modeCards = document.querySelectorAll('.hologram-card');
+            elements.taskSelectorArea = document.getElementById('task-selector-area');
+            elements.submitButton = document.getElementById('submit-button');
+            elements.commandInput = document.getElementById('command-input');
+            elements.outputArea = document.getElementById('output-area');
+            elements.loadingSpinner = document.getElementById('loading-spinner');
+            elements.outputContent = document.getElementById('output-content');
+            elements.taskLabel = document.getElementById('task-label');
+            elements.ttsControls = document.getElementById('tts-controls');
+            elements.playTtsButton = document.getElementById('play-tts');
+            elements.ttsStatus = document.getElementById('tts-status');
+            elements.imageOutputContainer = document.getElementById('image-output-container');
+            elements.generativeCanvas = document.getElementById('generative-canvas');
+
+            // Attach event listeners
+            elements.modeCards.forEach(card => card.addEventListener('click', handleModeClick));
+            elements.submitButton.addEventListener('click', handleSubmit);
+            elements.playTtsButton.addEventListener('click', toggleTtsPlayback);
+        });
+
+        // --- UI Handlers ---
+
+        function handleModeClick(event) {
+            const card = event.target.closest('.hologram-card');
+            if (!card) return;
+            const newMode = card.dataset.mode;
+            
+            elements.modeCards.forEach(c => c.classList.remove('selected'));
+            elements.submitButton.disabled = true;
+            selectedTask = null;
+            elements.ttsControls.classList.add('hidden');
+            elements.outputArea.classList.add('hidden');
+            elements.imageOutputContainer.classList.add('hidden'); 
+            
+            if (selectedMode === newMode) {
+                selectedMode = null;
+                elements.taskSelectorArea.innerHTML = '<p class="text-sm text-gray-400">กรุณาเลือกโหมดการทำงานด้านบนก่อน</p>';
+                elements.taskLabel.textContent = 'ป้อนคำสั่งหรือข้อความที่คุณต้องการ';
+            } else {
+                selectedMode = newMode;
+                card.classList.add('selected');
+                renderTasks(selectedMode);
+                elements.taskLabel.textContent = `ป้อนคำสั่งหรือข้อความสำหรับ [${selectedMode}]:`;
+            }
+        }
+
+        function handleTaskClick(taskName) {
+            selectedTask = taskName;
+            elements.submitButton.disabled = false;
+            
+            const taskButtons = elements.taskSelectorArea.querySelectorAll('.task-button');
+            taskButtons.forEach(btn => btn.classList.remove('selected'));
+            elements.taskSelectorArea.querySelector(`[data-task="${taskName}"]`).classList.add('selected');
+
+            elements.outputArea.classList.add('hidden');
+            elements.ttsControls.classList.add('hidden');
+            elements.imageOutputContainer.classList.add('hidden');
+        }
+
+        function renderTasks(mode) {
+            const tasks = taskLists[mode] || [];
+            if (tasks.length === 0) {
+                elements.taskSelectorArea.innerHTML = `<p class="text-sm text-red-400">โหมด ${mode} ไม่มีฟังก์ชันให้เลือก</p>`;
+                return;
+            }
+
+            const buttonsHtml = tasks.map(task => 
+                `<button data-task="${task}" class="task-button px-4 py-2 text-sm" onclick="handleTaskClick('${task}')">${task}</button>`
+            ).join('');
+
+            elements.taskSelectorArea.innerHTML = `
+                <p class="text-sm font-semibold text-cyan-400 mb-2">เลือกฟังก์ชันย่อย (${mode}):</p>
+                <div class="flex flex-wrap gap-2">${buttonsHtml}</div>
+            `;
+        }
+
+        // --- Client-Side Function Implementations ---
+        
+        // Function to create a simple hash from a string (for art generation)
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash |= 0; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        // --- Generative Art Function (Image Replacement) ---
+        function generateCanvasArt(input) {
+            const canvas = elements.generativeCanvas;
+            const ctx = canvas.getContext('2d');
+            const hash = simpleHash(input) || 12345;
+            const seed = hash;
+            
+            canvas.width = 600;
+            canvas.height = 400;
+
+            // Select a color palette based on a hash modulo
+            const paletteIndex = hash % colorPalettes.length;
+            const palette = colorPalettes[paletteIndex];
+            
+            // Set background color
+            ctx.fillStyle = '#0d1626'; // Deep space blue/black
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Generative Logic: Draw random geometric shapes based on the seed
+            const numShapes = 10 + (hash % 10);
+            
+            for (let i = 0; i < numShapes; i++) {
+                const rng = (seed * i * 997 + 123456) % 1000 / 1000; // Simple pseudo-random
+                const color = palette[i % palette.length];
+                const x = rng * canvas.width;
+                const y = (rng * 1.5) * canvas.height;
+                const size = 20 + rng * 80;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rng * Math.PI * 2);
+
+                ctx.fillStyle = color + '88'; // Add transparency
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+
+                if (i % 3 === 0) {
+                    // Draw a circle (Star/Planet)
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                } else if (i % 3 === 1) {
+                    // Draw a square (Data Block)
+                    ctx.fillRect(-size / 2, -size / 2, size, size);
+                    ctx.strokeRect(-size / 2, -size / 2, size, size);
+                } else {
+                    // Draw a triangle (Vector)
+                    ctx.beginPath();
+                    ctx.moveTo(0, -size / 2);
+                    ctx.lineTo(size / 2, size / 2);
+                    ctx.lineTo(-size / 2, size / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+            
+            elements.imageOutputContainer.classList.remove('hidden');
+        }
+
+        // --- Speech Synthesis Functions (TTS Replacement) ---
+
+        function getTtsVoice(lang = 'th-TH') {
+            const voices = window.speechSynthesis.getVoices();
+            return voices.find(voice => voice.lang.includes(lang)) || voices.find(voice => voice.default) || null;
+        }
+
+        function speakText(text, voice, lang) {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.voice = voice;
+            utterance.lang = lang;
+            
+            utterance.onstart = () => elements.ttsStatus.textContent = 'สถานะ: กำลังพูด...';
+            utterance.onend = () => elements.ttsStatus.textContent = 'สถานะ: พูดเสร็จสิ้น';
+            utterance.onerror = (e) => elements.ttsStatus.textContent = `สถานะ: ข้อผิดพลาดในการสังเคราะห์เสียง (${e.error})`;
+
+            currentUtterance = utterance;
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function toggleTtsPlayback() {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                elements.ttsStatus.textContent = 'สถานะ: หยุดชั่วคราว';
+            } else if (currentUtterance) {
+                window.speechSynthesis.speak(currentUtterance);
+            }
+        }
+        
+        async function handleTtsRequest(input) {
+            elements.ttsStatus.textContent = 'กำลังเตรียมเสียง...';
+            const { voice, lang, textPrefix } = ttsConfig['Text-to-Speech (TTS) Draft'];
+            const ttsVoice = getTtsVoice(lang);
+            
+            if (!ttsVoice) {
+                throw new Error(`ไม่พบเสียงสังเคราะห์ในเบราว์เซอร์สำหรับภาษา ${lang} โปรดลองใช้ Chrome หรือ Edge`);
+            }
+
+            const outputText = `${textPrefix}${input}`;
+            elements.outputContent.textContent = outputText;
+            elements.ttsControls.classList.remove('hidden');
+            
+            speakText(input, ttsVoice, lang);
+            return { text: `✅ ข้อความถูกส่งไปสังเคราะห์เสียงแล้ว (ใช้ Browser TTS) Voice: ${ttsVoice.name}` };
+        }
+
+        async function handleMultiSpeakerTtsRequest(input) {
+            elements.ttsStatus.textContent = 'กำลังสร้างสคริปต์ 2 ตัวละคร...';
+            
+            // 1. Generate Script (Client-side template)
+            const script = ttsConfig['Audio Drama Generator (Multi-Speaker) ✨'].scriptTemplate(input);
+            elements.outputContent.textContent = `**สคริปต์ Audio Drama ที่สร้างโดย JS Template:**\n---\n${script}\n\n**กำลังสังเคราะห์เสียงบทสนทนา (Browser TTS)...**`;
+            
+            const lines = script.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            
+            const voiceA = getTtsVoice(ttsConfig['Audio Drama Generator (Multi-Speaker) ✨'].voiceA.lang);
+            const voiceB = getTtsVoice(ttsConfig['Audio Drama Generator (Multi-Speaker) ✨'].voiceB.lang);
+            
+            if (!voiceA || !voiceB) {
+                throw new Error("ไม่พบเสียงสังเคราะห์ที่แตกต่างกันสองเสียงในเบราว์เซอร์");
+            }
+            
+            // 2. Queue Utterances (Sequential Speaking)
+            const queue = [];
+            lines.forEach(line => {
+                const parts = line.split(':');
+                if (parts.length < 2) return;
+                
+                const speaker = parts[0].trim();
+                const dialogue = parts.slice(1).join(':').trim();
+                
+                const voiceConfig = (speaker.includes('A')) ? ttsConfig['Audio Drama Generator (Multi-Speaker) ✨'].voiceA : ttsConfig['Audio Drama Generator (Multi-Speaker) ✨'].voiceB;
+                const ttsVoice = (speaker.includes('A')) ? voiceA : voiceB;
+                
+                if (dialogue) {
+                    const utterance = new SpeechSynthesisUtterance(dialogue);
+                    utterance.voice = ttsVoice;
+                    utterance.lang = voiceConfig.lang;
+                    queue.push(utterance);
+                }
+            });
+
+            if (queue.length === 0) {
+                elements.ttsStatus.textContent = 'สถานะ: ไม่พบบทสนทนาที่ถูกต้องในสคริปต์';
+                return;
+            }
+
+            // Function to speak the queue sequentially
+            function speakQueue(index) {
+                if (index >= queue.length) {
+                    elements.ttsStatus.textContent = 'สถานะ: บทสนทนาจบลงแล้ว';
+                    return;
+                }
+                const utterance = queue[index];
+                utterance.onend = () => speakQueue(index + 1);
+                window.speechSynthesis.speak(utterance);
+            }
+            
+            window.speechSynthesis.cancel();
+            elements.ttsControls.classList.remove('hidden');
+            speakQueue(0);
+            
+            return { text: `✅ บทสนทนาถูกสร้างและสังเคราะห์เสียงแล้ว (Voice A: ${voiceA.name}, Voice B: ${voiceB.name})` };
+        }
+
+
+        // --- Main Submission Handler ---
+
+        async function handleSubmit() {
+            const userInput = elements.commandInput.value.trim();
+            
+            if (!selectedTask || (!userInput && !taskLists[selectedMode].includes('General Conversation & Q/A'))) { 
+                elements.outputContent.textContent = "กรุณาเลือกฟังก์ชันและป้อนข้อความที่เหมาะสม";
+                elements.outputArea.classList.remove('hidden');
+                return; 
+            }
+            
+            elements.submitButton.disabled = true;
+            elements.loadingSpinner.classList.remove('hidden');
+            elements.outputArea.classList.remove('hidden');
+            elements.outputContent.textContent = '';
+            elements.ttsControls.classList.add('hidden');
+            elements.imageOutputContainer.classList.add('hidden');
+            window.speechSynthesis.cancel(); // Stop any ongoing speech
+
+            try {
+                let outputData = { text: '', sources: [] };
+                
+                if (selectedTask.includes('TTS Draft')) {
+                    outputData = await handleTtsRequest(userInput);
+                } else if (selectedTask.includes('Audio Drama Generator')) { 
+                    outputData = await handleMultiSpeakerTtsRequest(userInput);
+                } else if (selectedTask.includes('AI Image Generator')) {
+                    generateCanvasArt(userInput);
+                    outputData = { text: `✅ Generative Art ถูกสร้างบน Canvas แล้ว! (สีและรูปทรงอิงจากคำสั่งของคุณ)`, sources: [] };
+                } else {
+                    // Use the text templates for all other 18 functions
+                    const templateFunction = templates[selectedTask];
+                    if (templateFunction) {
+                        outputData.text = templateFunction(userInput);
+                    } else {
+                        outputData.text = templates['K-SEVEN AI Chatbot'](userInput);
+                    }
+                }
+                
+                elements.outputContent.textContent = outputData.text;
+
+            } catch (error) {
+                console.error("Client-Side Process Failed:", error);
+                elements.outputContent.textContent = `❌ เกิดข้อผิดพลาดในการประมวลผล (Client-Side Error): ${error.message}. โปรดลองใหม่อีกครั้ง`;
+            } finally {
+                elements.loadingSpinner.classList.add('hidden');
+                elements.submitButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+
